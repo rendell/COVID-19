@@ -1,0 +1,51 @@
+---
+title: "Aruba coronavirus"
+output: html_notebook
+---
+
+```{r}
+library(xts)
+library(dygraphs)
+```
+
+```{r}
+ aruba<-xts(c(19,17,12,9,8,5,4,4,4,3,2,2,2), Sys.Date()-1:13)
+
+names(aruba) <- "Confirmed cases"
+```
+
+
+```{r}
+dygraph(aruba, main="COVID-19 in Aruba (Updated 3/25/2020)")%>%
+  dyOptions(axisLineWidth = 1.5, fillGraph = TRUE, drawGrid = FALSE, colors = "#3E90DF")%>% 
+  dyRangeSelector()%>%
+  dyEvent("2020-3-17", "Closed air border", labelLoc = "top", color = "#F0303E") %>%
+  dyEvent("2020-3-21", "Curfew starts", labelLoc = "top", color = "#F0303E")
+```
+
+
+```{r}
+library(forecast)
+fit <- auto.arima(aruba)
+
+plot(forecast(fit,h=7))
+
+fitted<-fit[["fitted"]]
+
+arima_fitted<-xts(fitted, Sys.Date()-13:1)
+
+```
+
+
+
+
+```{r}
+grouped <-cbind(aruba,arima_fitted)
+dygraph(grouped, main="COVID-19 in Aruba (Updated 3/25/2020)")%>%
+  dySeries("Confirmed.cases", drawPoints = TRUE, pointShape = "square", color = "#3E90DF") %>%
+  dySeries("arima_fitted", fillGraph = FALSE, color = "gray", strokeWidth = 2, strokePattern = "dashed")%>%
+  dyOptions(axisLineWidth = 1.5, fillGraph = TRUE, drawGrid = FALSE)%>% 
+  dyRangeSelector()%>%
+  dyEvent("2020-3-17", "Closed air border", labelLoc = "top", color = "#F0303E") %>%
+  dyEvent("2020-3-21", "Curfew starts", labelLoc = "top", color = "#F0303E")
+```
